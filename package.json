@@ -2,9 +2,9 @@
   "name": "xloudphone-automation",
   "version": "0.1.0",
   "private": true,
-  "description": "Playwright automation for app.xcloudphone.com",
+  "description": "Playwright multi-account automation for app.xcloudphone.com",
   "scripts": {
-    "login": "node src/login.js",
+    "login": "node src/login-all.js",
     "devices": "node src/devices.js",
     "postinstall": "playwright install chromium"
   },

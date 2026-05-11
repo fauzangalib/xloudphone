@@ -1,36 +1,58 @@
 const { launch } = require('./browser');
+const accounts = require('../accounts.json');
 
 /**
- * Device management skeleton. Run: npm run devices
+ * Jalankan aksi ke semua akun secara berurutan.
+ * Run: npm run devices
  *
- * This script assumes you have already run `npm run login` so the session
- * in ./user-data is authenticated.
- *
- * TODO: The selectors below are placeholders. Once we inspect the real
- * dashboard DOM we will replace them with the actual ones.
+ * Setiap akun dibuka browsernya, aksi dijalankan, lalu browser ditutup.
+ * Edit fungsi `runAccount()` di bawah untuk menyesuaikan aksi yang diinginkan.
  */
-(async () => {
-  const { context, page } = await launch({ headless: false });
 
+async function runAccount(account, page) {
+  console.log(`  → Membuka dashboard...`);
   await page.goto('https://app.xcloudphone.com', { waitUntil: 'domcontentloaded' });
-
-  // Give the SPA a moment to hydrate
   await page.waitForLoadState('networkidle').catch(() => {});
 
-  // --- Placeholder: list devices on the page ------------------------------
-  // Replace '[data-testid="device-card"]' with the real selector after we
-  // inspect the dashboard.
+  // ----------------------------------------------------------------
+  // TODO: Ganti placeholder di bawah dengan aksi nyata setelah
+  // kita inspect selector dari dashboard xcloudphone.
+  // ----------------------------------------------------------------
+
+  // Contoh: ambil daftar device
   const deviceCards = await page.locator('[data-testid="device-card"]').all();
-  console.log(`Found ${deviceCards.length} device(s).`);
+  console.log(`  → Ditemukan ${deviceCards.length} device.`);
 
-  for (const card of deviceCards) {
-    const name = (await card.innerText()).split('\n')[0];
-    console.log(' -', name);
-  }
-
-  // --- Placeholder: example action ---------------------------------------
+  // Contoh: klik tombol Start pada device pertama
   // await page.getByRole('button', { name: 'Start' }).first().click();
   // await page.waitForTimeout(2000);
 
-  await context.close();
+  // Contoh: ambil screenshot
+  // await page.screenshot({ path: `screenshots/${account.id}.png` });
+}
+
+(async () => {
+  console.log(`\n===== XLOUDPHONE DEVICE MANAGER =====`);
+  console.log(`Total akun: ${accounts.length}\n`);
+
+  for (let i = 0; i < accounts.length; i++) {
+    const account = accounts[i];
+    const num = `[${i + 1}/${accounts.length}]`;
+
+    console.log(`${num} ⚙️  Akun: ${account.id} (${account.email})`);
+
+    let context, page;
+    try {
+      ({ context, page } = await launch({ accountId: account.id, headless: true }));
+      await runAccount(account, page);
+      console.log(`${num} ✅ Selesai.\n`);
+    } catch (err) {
+      console.error(`${num} ❌ Error: ${err.message}\n`);
+    } finally {
+      if (context) await context.close();
+    }
+  }
+
+  console.log('===== SEMUA AKUN SELESAI =====');
+  process.exit(0);
 })();

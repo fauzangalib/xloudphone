@@ -1,17 +1,24 @@
 const { chromium } = require('playwright');
 const path = require('path');
+const fs = require('fs');
 
 /**
- * Open a Chromium instance that persists cookies/localStorage to ./user-data.
- * After you log in once, subsequent runs reuse the same session.
+ * Buka Chromium dengan session tersimpan per akun.
+ * Session disimpan di ./user-data/<accountId>/
+ *
+ * @param {string} accountId  - ID akun (misal: "akun01")
+ * @param {boolean} headless  - false = tampilkan browser
  */
-async function launch({ headless = false } = {}) {
-  const userDataDir = path.resolve(__dirname, '..', 'user-data');
+async function launch({ accountId, headless = false }) {
+  const userDataDir = path.resolve(__dirname, '..', 'user-data', accountId);
+  fs.mkdirSync(userDataDir, { recursive: true });
+
   const context = await chromium.launchPersistentContext(userDataDir, {
     headless,
     viewport: { width: 1280, height: 800 },
     args: ['--disable-blink-features=AutomationControlled'],
   });
+
   const page = context.pages()[0] || (await context.newPage());
   return { context, page };
 }
